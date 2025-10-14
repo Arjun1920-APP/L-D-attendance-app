@@ -1,43 +1,39 @@
 from flask import Flask, render_template, request, jsonify
 import gspread
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 import os
-from datetime import datetime
 import json
+from datetime import datetime
 
 app = Flask(__name__)
 
 # ---------------- Google Sheets setup ----------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-# OAuth2 token handling
-creds = None
-if os.path.exists("token.json"):
-    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+# ---------------- Load Credentials from Environment Variables ----------------
+credentials_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+token_json = os.environ.get("GOOGLE_TOKEN_JSON")
+SPREADSHEET_ID = os.environ.get("GOOGLE_SHEET_ID")
 
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-        creds = flow.run_local_server(port=0)
+if not credentials_json or not token_json or not SPREADSHEET_ID:
+    raise Exception(
+        "Missing environment variables: GOOGLE_CREDENTIALS_JSON, GOOGLE_TOKEN_JSON, or GOOGLE_SHEET_ID."
+    )
 
-    with open("token.json", "w") as token:
-        token.write(creds.to_json())
+# Convert JSON strings to Python dicts
+# credentials_json is kept for completeness if needed by other flows, but we use token_json for authorized creds
+credentials_dict = json.loads(credentials_json)
+token_dict = json.loads(token_json)
 
+# Authorize gspread client using the token info
+creds = Credentials.from_authorized_user_info(token_dict, SCOPES)
 client = gspread.authorize(creds)
 
-# Your spreadsheet ID
-SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"
 sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
 # ---------------- Routes ----------------
-
 @app.route("/")
 def index():
-    # Get session name from URL parameter, default to 'L&D Session' if not provided >>(?session=HR_Orientation)
     session_name = request.args.get("session", "L&D Session")
     return render_template("index.html", session=session_name)
 
@@ -59,7 +55,7 @@ def submit_feedback():
             data.get("name"),
             data.get("email"),
             data.get("phone"),
-            data.get("session"),   # 👈 take from frontend
+            data.get("session"),
             data.get("q1"),
             data.get("q2"),
             data.get("q3"),
@@ -72,7 +68,6 @@ def submit_feedback():
             data.get("q10"),
             data.get("q11"),
             data.get("q12")
-
         ]
         sheet.append_row(row)
         return jsonify({"status": "success"})

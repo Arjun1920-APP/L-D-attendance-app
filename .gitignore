@@ -3,3 +3,6 @@ token.json
 __pycache__/
 
 
+"credentials.json" 
+"token.json" 
+"__pycache__/" 
