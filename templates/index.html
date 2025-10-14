@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo">
+    <h1>Learning & Development</h1>
+    <h2>{{ session }}</h2>
+  </div>
+
+  <div id="formContainer">
+    <!-- Step 1: Personal Info -->
+    <div class="step step-personal">
+      <div class="form-group">
+        <label class="form-label">Name*</label>
+        <input type="text" id="name" class="form-control" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email*</label>
+        <input type="email" id="email" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone*</label>
+        <input type="text" id="phone" class="form-control" placeholder="Phone" required>
+      </div>
+      <input type="hidden" id="session" value="{{ session }}">
+      <button class="submit-btn" onclick="startFeedback()"> Next &raquo; </button>
+    </div>
+
+    <!-- Step 2: Feedback Questions -->
+    <div class="step step-feedback">
+      <div class="progress mb-2">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <h5 id="questionText"></h5>
+      <button class="option-btn" onclick="selectAnswer(0)"></button>
+      <button class="option-btn" onclick="selectAnswer(1)"></button>
+      <button class="option-btn" onclick="selectAnswer(2)"></button>
+      <button class="option-btn" onclick="selectAnswer(3)"></button>
+      <button class="option-btn" onclick="selectAnswer(4)"></button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let answers = {};
+let currentStep = 0;
+let questions = [
+  { q: "Relevance to my job/needs", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Clarity and organization of material", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Depth and coverage of topics", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Usefulness of supporting materials (handouts, slides, etc.)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Knowledge and expertise on the subject", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Communication style and clarity", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Ability to engage the participants (Q&A, activities)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Pacing and time management", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Likelihood of applying what I learned", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "I would recommend this program to a colleague", options: ["Yes","Maybe","No"], type: "choice" },
+  { q: "Please share two takeaways from the Program which I will apply back to work", type: "text" },
+  { q: "Please provide any additional comments or suggestions for the program", type: "text" }
+];
+
+// Start Feedback - called when user clicks Next on personal info
+function startFeedback() {
+    let name = document.getElementById('name').value.trim();
+    let email = document.getElementById('email').value.trim();
+    let phone = document.getElementById('phone').value.trim();
+    let sessionName = document.getElementById('session').value;
+
+    if(!name || !email || !phone){ 
+        alert("Fill all fields"); 
+        return; 
+    }
+
+    answers.name = name;
+    answers.email = email;
+    answers.phone = phone;
+    answers.session = sessionName;
+
+    document.querySelector('.step-personal').style.display = "none";
+    let feedbackStep = document.querySelector('.step-feedback');
+    feedbackStep.style.display = "block";
+    document.querySelector('.progress').style.display = "block";
+
+    currentStep = 0;
+    showQuestion();
+}
+
+// Show current question
+function showQuestion() {
+    let q = questions[currentStep];
+    document.getElementById('questionText').innerText = q.q;
+    let buttons = document.querySelectorAll('.option-btn');
+
+    if(q.type === "choice") {
+        // Show MCQ buttons
+        buttons.forEach((btn,i)=>{
+        if(q.options[i]){
+            btn.style.display = "inline-block";
+            btn.innerText = q.options[i];
+            btn.disabled = false;
+        } else {
+            btn.style.display = "none"; // hide extra buttons
+        }
+    });
+
+        // Hide text input/button if exists
+        let textInput = document.getElementById('textAnswer');
+        if(textInput) textInput.style.display = "none";
+        let textBtn = document.getElementById('textNextBtn');
+        if(textBtn) textBtn.style.display = "none";
+
+    } else if(q.type === "text") {
+    // Hide all MCQ buttons
+    buttons.forEach(btn => btn.style.display = "none");
+
+    // Create text input and Next/Submit button if not exist
+    let feedbackStep = document.querySelector('.step-feedback');
+    let textInput = document.getElementById('textAnswer');
+    let textBtn = document.getElementById('textNextBtn');
+
+    if(!textInput){
+        textInput = document.createElement('textarea');
+        // textInput.type = "text";
+        textInput.id = "textAnswer";
+        textInput.className = "form-control";
+        textInput.placeholder = "Type your answer here";
+        textInput.rows = 4;
+        textInput.style.resize = "vertical"; // allow vertical resizing
+        textInput.style.width = "100%";
+        feedbackStep.appendChild(textInput);
+
+        textBtn = document.createElement('button');
+        textBtn.id = "textNextBtn";
+        textBtn.className = "submit-btn";
+        textBtn.onclick = selectTextAnswer;
+        textBtn.style.marginTop = "10px";
+        textBtn.style.display = "block";
+        feedbackStep.appendChild(textBtn);
+        
+    }
+
+    textInput.style.display = "block";
+    textInput.value = ""; // clear previous input
+
+    // Change button text to "Submit" if last question
+    if(currentStep === questions.length - 1){
+        textBtn.innerText = "Submit";
+    } else {
+        textBtn.innerText = "Next »";
+    }
+    textBtn.style.display = "inline-block";
+}
+
+
+    // Update progress bar
+    let progress = ((currentStep) / questions.length) * 100;
+    let green = Math.floor(progress * 2.55);
+    let red = 255 - green;
+    document.getElementById('progressBar').style.width = progress + "%";
+    document.getElementById('progressBar').style.backgroundColor = `rgb(${red},${green},0)`;
+}
+
+// Handle MCQ answer
+function selectAnswer(optionIndex) {
+    let qKey = `q${currentStep+1}`;
+    answers[qKey] = questions[currentStep].options[optionIndex];
+
+    currentStep++;
+    if(currentStep < questions.length){
+        showQuestion();
+    } else {
+        submitFeedback();
+    }
+}
+
+// Handle text answer
+function selectTextAnswer(){
+    let qKey = `q${currentStep+1}`;
+    let value = document.getElementById('textAnswer').value.trim();
+    if(!value){ 
+        alert("Please enter your answer"); 
+        return; 
+    }
+    answers[qKey] = value;
+
+    currentStep++;
+    if(currentStep < questions.length){
+        showQuestion();
+    } else {
+        submitFeedback();
+    }
+}
+
+// Submit final answers
+function submitFeedback() {
+    document.getElementById('progressBar').style.width = "100%";
+    document.getElementById('progressBar').style.backgroundColor = "green";
+
+    fetch("/submit_feedback", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(answers)
+    }).then(res => res.json())
+      .then(data => {
+          if(data.status === "success"){
+              window.location.href = "/thankyou";
+          } else {
+              alert("Error: " + data.message);
+          }
+      });
+}
+
+</script>
+</body>
+</html>

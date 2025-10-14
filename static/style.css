@@ -1,0 +1,180 @@
+/* ---------------- Body & Background ---------------- */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ---------------- Card ---------------- */
+.card {
+    border-radius: 12px;
+    padding: 25px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    max-width: 500px;
+    width: 100%;
+}
+
+/* ---------------- Header ---------------- */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header img {
+    max-width: 175px;   /* increased from 80px */
+    width: 50%;         /* responsive width */
+    height: auto;
+    margin-bottom: -13px;
+}
+.header h1 {
+    font-size: 1.5rem;
+    color: #C0392B;
+    margin-bottom: 1px;
+    font-weight: 600;
+}
+
+.header h2 {
+    font-size: 1rem;
+    color: #7F8C8D;
+    font-weight: 500;
+}
+
+/* ---------------- Form Fields ---------------- */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: #2C3E50;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+input.form-control,
+textarea.form-control {
+    border-radius: 8px;
+    border: 1px solid #C0392B;
+    padding: 8px;
+    font-size: 0.9rem;
+    width: 100%;
+    height: 35px;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+input.form-control:focus,
+textarea.form-control:focus {
+    border-color: #E74C3C;
+    box-shadow: 0 0 5px rgba(231,76,60,0.3);
+    outline: none;
+}
+
+textarea { resize: none; }
+
+/* ---------------- Submit Button ---------------- */
+.submit-btn {
+    background: #C0392B;
+    color: #fff;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.95rem;
+    float: right;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.submit-btn:hover {
+    background: #E74C3C;
+    transform: translateY(-1px);
+}
+
+/* ---------------- Feedback Questions ---------------- */
+.step-feedback {
+    display: none;
+}
+
+.option-btn {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: 1px solid #C0392B;
+    background: #fff;
+    color: #C0392B;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option-btn:hover {
+    background: #C0392B;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* ---------------- Progress Bar ---------------- */
+.progress {
+    height: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: none;
+    background: #eee;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s ease, background-color 0.5s ease;
+    background-color: #C0392B;
+}
+
+#textAnswer {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px; /* space between input and button */
+}
+
+#textNextBtn {
+    display: block;       /* ensures button is on its own line */
+    margin-top: 5px;
+    width: 32%;          /* optional: full width button */
+}
+
+
+/* ---------------- Thank You Page ---------------- */
+.thankyou-container {
+    max-width: 400px;
+    width: 100%;
+    margin: 80px auto;
+    text-align: center;
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 2px solid #C0392B;
+}
+
+.thankyou-container img { max-width: 150px; margin-bottom: -18px; }
+
+.thankyou-container h1 { color: #C0392B; margin-bottom: 10px; font-size: 1.4rem; }
+
+.thankyou-container p { color: #2C3E50; font-size: 0.95rem; margin-bottom: 5px; }
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 500px) {
+    .card { padding: 15px; }
+    .submit-btn, .option-btn { font-size: 0.85rem; padding: 6px; }
+    h5 { font-size: 0.95rem; }
+    .header h1 { font-size: 1.3rem; }
+}
