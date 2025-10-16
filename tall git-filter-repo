@@ -1,0 +1,93 @@
+[33mcommit 98894fed0aa5783dc53279649b6ff30573d3e921[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mthankyou-update[m[33m)[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Thu Oct 16 12:57:47 2025 +0530
+
+    Ignore credentials and token files
+
+.gitignore
+
+[33mcommit ee1cb54b6bf11151bfb1c6617ef2e3d87215fec6[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 17:47:48 2025 +0530
+
+    Update Thank You page
+
+.gitignore
+
+[33mcommit 1ab6e5a181be369a847b0403313f4621ff9c558a[m[33m ([m[1;32mmain[m[33m)[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 17:27:34 2025 +0530
+
+    Remove secrets from repo
+
+credentials_singleline.txt
+token_singleline.txt
+
+[33mcommit 05655923255071366e785a7e9640579bd37fb2c4[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 17:26:01 2025 +0530
+
+    prevent from redirecting to again last question from thankyou page
+
+credentials_singleline.txt
+templates/thankyou.html
+token_singleline.txt
+
+[33mcommit c17d23cd12f4d03ac34262addaa689a5d09eb290[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 16:48:49 2025 +0530
+
+    Use env vars for Google credentials; ignore credentials.json/token.json
+
+.gitignore
+app.py
+
+[33mcommit 7acf7903f88a4958d344d28015cefebd1d94516b[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 16:39:56 2025 +0530
+
+    Add gunicorn and set runtime to python-3.11.9 for Render
+
+requirements.txt
+runtime.txt
+
+[33mcommit 927ab3b122750edbd20687ca5ac8ff79a4544f7d[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 16:30:16 2025 +0530
+
+    Add gunicorn for Render deployment
+
+requirements.txt
+
+[33mcommit 0e01e41bd20a5025252292a1a3059b38fdbbd375[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 16:07:58 2025 +0530
+
+    Use environment variables for Google credentials
+
+app.py
+
+[33mcommit 96c7d3fd72d71be61da94f9152bc40ab226bdb3e[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 15:57:44 2025 +0530
+
+    Remove secrets and add .gitignore
+
+.gitignore
+
+[33mcommit 6b2d8d8a4d1ae5aead56387c0f34740fd268a9b8[m
+Author: Arjun Patil <arjun.patil@ambit.co>
+Date:   Tue Oct 14 15:50:39 2025 +0530
+
+    intial commit
+
+__pycache__/app.cpython-313.pyc
+app.py
+authorize.py
+requirements.txt
+static/kbcbg.jpg
+static/logo.jpg
+static/style.css
+templates/index.html
+templates/thankyou.html
+test.py
