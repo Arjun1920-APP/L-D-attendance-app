@@ -14,5 +14,18 @@
   <p>Your attendance and feedback have been successfully recorded.</p>
 </div>
 
+<script>
+  // Push current state so back button won't work
+  window.history.pushState(null, "", window.location.href);
+  window.onpopstate = function () {
+      window.history.pushState(null, "", window.location.href);
+  };
+
+  // Prevent page reload back navigation
+  if (window.performance && window.performance.navigation.type === 2) {
+      window.location.href = window.location.href;
+  }
+</script>
+
 </body>
 </html>
