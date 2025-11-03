@@ -1,34 +1,35 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session , url_for
 import gspread
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 import os
-import json
 from datetime import datetime
 
+import json
+
 app = Flask(__name__)
+app.secret_key = "supersecretkey123"  # Needed for Flask sessions
 
 # ---------------- Google Sheets setup ----------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-# ---------------- Load Credentials from Environment Variables ----------------
-credentials_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
-token_json = os.environ.get("GOOGLE_TOKEN_JSON")
-SPREADSHEET_ID = os.environ.get("GOOGLE_SHEET_ID")
+# Local JSON files
+CREDENTIALS_FILE = "credentials.json"
+TOKEN_FILE = "token.json"
+SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"  # Replace with your actual sheet ID
 
-if not credentials_json or not token_json or not SPREADSHEET_ID:
-    raise Exception(
-        "Missing environment variables: GOOGLE_CREDENTIALS_JSON, GOOGLE_TOKEN_JSON, or GOOGLE_SHEET_ID."
-    )
+# Authorize gspread client
+creds = None
+if os.path.exists(TOKEN_FILE):
+    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+else:
+    flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
+    creds = flow.run_local_server(port=0)
+    with open(TOKEN_FILE, "w") as token_file:
+        token_file.write(creds.to_json())
 
-# Convert JSON strings to Python dicts
-# credentials_json is kept for completeness if needed by other flows, but we use token_json for authorized creds
-credentials_dict = json.loads(credentials_json)
-token_dict = json.loads(token_json)
-
-# Authorize gspread client using the token info
-creds = Credentials.from_authorized_user_info(token_dict, SCOPES)
 client = gspread.authorize(creds)
-
 sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
 # ---------------- Routes ----------------
@@ -39,17 +40,21 @@ def index():
 
 @app.route("/thankyou")
 def thankyou():
-    return render_template("thankyou.html")
+    name = session.pop("user_name", "Participant")
+    return render_template("thankyou.html", name=name)
 
 @app.route("/submit_feedback", methods=["POST"])
 def submit_feedback():
     data = request.get_json()
-
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400
 
+    # Store user name in session
+    session["user_name"] = data.get("name")  
+
     try:
-        # Match your GSheet structure
+
+        # Prepare row to append to Google Sheet
         row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # Timestamp
             data.get("name"),
@@ -70,7 +75,7 @@ def submit_feedback():
             data.get("q12")
         ]
         sheet.append_row(row)
-        return jsonify({"status": "success"})
+        return jsonify({"status": "success" , "redirect": url_for("thankyou")})
     except Exception as e:
         print("Error:", e)
         return jsonify({"status": "error", "message": str(e)}), 500

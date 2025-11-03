@@ -23,12 +23,12 @@
         <input type="text" id="name" class="form-control" placeholder="Full name" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Email*</label>
-        <input type="email" id="email" class="form-control" placeholder="Email" required>
+        <label class="form-label">Ambit Email*</label>
+        <input type="email" id="email" class="form-control" placeholder="Ambit email" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Phone*</label>
-        <input type="text" id="phone" class="form-control" placeholder="Phone" required>
+        <label class="form-label">Mobile*</label>
+        <input type="text" id="phone" class="form-control" placeholder="Mobile no." required>
       </div>
       <input type="hidden" id="session" value="{{ session }}">
       <button class="submit-btn" onclick="startFeedback()"> Next &raquo; </button>
@@ -55,171 +55,223 @@
 let answers = {};
 let currentStep = 0;
 let questions = [
-  { q: "Relevance to my job/needs", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Clarity and organization of material", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Depth and coverage of topics", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Usefulness of supporting materials (handouts, slides, etc.)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Knowledge and expertise on the subject", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Communication style and clarity", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Ability to engage the participants (Q&A, activities)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Pacing and time management", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "Likelihood of applying what I learned", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
-  { q: "I would recommend this program to a colleague", options: ["Yes","Maybe","No"], type: "choice" },
-  { q: "Please share two takeaways from the Program which I will apply back to work", type: "text" },
-  { q: "Please provide any additional comments or suggestions for the program", type: "text" }
+  { q: "Relevance to my job/needs", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Clarity and organization of material", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Depth and coverage of topics", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Usefulness of supporting materials (handouts, slides, etc.)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Knowledge and expertise on the subject", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Communication style and clarity", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Ability to engage the participants (Q&A, activities)", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Pacing and time management", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "Likelihood of applying what I learned", options: ["Excellent","Very Good","Good","Fair","Poor"], type: "choice" },
+  { q: "I would recommend this program to a colleague", options: ["Yes","Maybe","No"], type: "choice" },
+  { q: "Please share two takeaways from the Program which I will apply back to work", type: "text" },
+  { q: "Please provide any additional comments or suggestions for the program", type: "text" }
 ];
 
 // Start Feedback - called when user clicks Next on personal info
 function startFeedback() {
-    let name = document.getElementById('name').value.trim();
-    let email = document.getElementById('email').value.trim();
-    let phone = document.getElementById('phone').value.trim();
-    let sessionName = document.getElementById('session').value;
+    let name = document.getElementById('name').value.trim();
+    let email = document.getElementById('email').value.trim();
+    let phone = document.getElementById('phone').value.trim();
+    let sessionName = document.getElementById('session').value;
 
-    if(!name || !email || !phone){ 
-        alert("Fill all fields"); 
-        return; 
-    }
+    if(!name || !email || !phone){ 
+        alert("Fill all fields"); 
+        return; 
+    }
 
-    answers.name = name;
-    answers.email = email;
-    answers.phone = phone;
-    answers.session = sessionName;
+    answers.name = name;
+    answers.email = email;
+    answers.phone = phone;
+    answers.session = sessionName;
 
-    document.querySelector('.step-personal').style.display = "none";
-    let feedbackStep = document.querySelector('.step-feedback');
-    feedbackStep.style.display = "block";
-    document.querySelector('.progress').style.display = "block";
+    document.querySelector('.step-personal').style.display = "none";
+    let feedbackStep = document.querySelector('.step-feedback');
+    feedbackStep.style.display = "block";
+    document.querySelector('.progress').style.display = "block";
 
-    currentStep = 0;
-    showQuestion();
+    currentStep = 0;
+    showQuestion();
 }
 
 // Show current question
 function showQuestion() {
-    let q = questions[currentStep];
-    document.getElementById('questionText').innerText = q.q;
-    let buttons = document.querySelectorAll('.option-btn');
+    let q = questions[currentStep];
+    document.getElementById('questionText').innerText = q.q;
+    let buttons = document.querySelectorAll('.option-btn');
 
-    if(q.type === "choice") {
-        // Show MCQ buttons
-        buttons.forEach((btn,i)=>{
-        if(q.options[i]){
-            btn.style.display = "inline-block";
-            btn.innerText = q.options[i];
-            btn.disabled = false;
-        } else {
-            btn.style.display = "none"; // hide extra buttons
-        }
-    });
+    // Reset all MCQ buttons first
+    buttons.forEach(btn => {
+        btn.style.display = "none";               // hide initially
+        btn.style.backgroundColor = "#fff";       // white background
+        btn.style.color = "#C0392B";              // red text
+        btn.style.borderColor = "#C0392B";        // red border
+        btn.classList.remove("selected");         // remove selection
+        btn.onmouseenter = null;                  // remove old hover
+        btn.onmouseleave = null;
+    });
 
-        // Hide text input/button if exists
-        let textInput = document.getElementById('textAnswer');
-        if(textInput) textInput.style.display = "none";
-        let textBtn = document.getElementById('textNextBtn');
-        if(textBtn) textBtn.style.display = "none";
+    if (q.type === "choice") {
+        // Show MCQ buttons
+        buttons.forEach((btn, i) => {
+            if (q.options[i]) {
+                btn.style.display = "inline-block";
+                btn.innerText = q.options[i];
+                btn.disabled = false;
 
-    } else if(q.type === "text") {
-    // Hide all MCQ buttons
-    buttons.forEach(btn => btn.style.display = "none");
+                // Hover effect
+                btn.onmouseenter = () => { 
+                    btn.style.backgroundColor = "#E74C3C"; 
+                    btn.style.color = "#fff"; 
+                }
+                btn.onmouseleave = () => { 
+                    if(!btn.classList.contains("selected")) {
+                        btn.style.backgroundColor = "#fff"; 
+                        btn.style.color = "#C0392B"; 
+                    }
+                }
 
-    // Create text input and Next/Submit button if not exist
-    let feedbackStep = document.querySelector('.step-feedback');
+                // Click handler to select answer
+                btn.onclick = () => {
+                    // Mark selected
+                    buttons.forEach(b => {
+                        b.classList.remove("selected");
+                        b.style.backgroundColor = "#fff";
+                        b.style.color = "#C0392B";
+                    });
+                    btn.classList.add("selected");
+                    btn.style.backgroundColor = "#E74C3C";
+                    btn.style.color = "#fff";
+
+                    selectAnswer(i); // move to next question
+                }
+            }
+        });
+
+        // Hide text input/button if exists
+        let textInput = document.getElementById('textAnswer');
+        if(textInput) textInput.style.display = "none";
+        let textBtn = document.getElementById('textNextBtn');
+        if(textBtn) textBtn.style.display = "none";
+
+    } else if (q.type === "text") {
+        // Hide all MCQ buttons
+        buttons.forEach(btn => btn.style.display = "none");
+
+        let feedbackStep = document.querySelector('.step-feedback');
+        let textInput = document.getElementById('textAnswer');
+        let textBtn = document.getElementById('textNextBtn');
+
+        // Create textarea if not exist
+        if (!textInput) {
+            textInput = document.createElement('textarea');
+            textInput.id = "textAnswer";
+            textInput.className = "form-control";
+            textInput.placeholder = "Type your answer here";
+            textInput.rows = 4;
+            textInput.style.resize = "vertical";
+            textInput.style.width = "100%";
+            feedbackStep.appendChild(textInput);
+        }
+
+        textInput.style.display = "block";
+        textInput.value = ""; // clear previous input
+
+        // Create button if not exist
+        if (!textBtn) {
+            textBtn = document.createElement('button');
+            textBtn.id = "textNextBtn";
+            textBtn.className = "submit-btn";
+            textBtn.style.marginTop = "10px";
+            feedbackStep.appendChild(textBtn);
+        }
+
+        textBtn.style.display = "inline-block";
+        textBtn.innerText = currentStep === questions.length - 1 ? "Submit" : "Next »";
+
+        // Always assign onclick handler
+        textBtn.onclick = selectTextAnswer;
+    }
+
+    // Update progress bar
+    let progress = (currentStep / questions.length) * 100;
+    let green = Math.floor(progress * 2.55);
+    let red = 255 - green;
+    let progressBar = document.getElementById('progressBar');
+    progressBar.style.width = progress + "%";
+    progressBar.style.backgroundColor = `rgb(${red},${green},0)`;
+}
+
+// Handle text answer input and submission - **NEW FUNCTION**
+function selectTextAnswer() {
     let textInput = document.getElementById('textAnswer');
-    let textBtn = document.getElementById('textNextBtn');
+    let answer = textInput.value.trim();
 
-    if(!textInput){
-        textInput = document.createElement('textarea');
-        // textInput.type = "text";
-        textInput.id = "textAnswer";
-        textInput.className = "form-control";
-        textInput.placeholder = "Type your answer here";
-        textInput.rows = 4;
-        textInput.style.resize = "vertical"; // allow vertical resizing
-        textInput.style.width = "100%";
-        feedbackStep.appendChild(textInput);
-
-        textBtn = document.createElement('button');
-        textBtn.id = "textNextBtn";
-        textBtn.className = "submit-btn";
-        textBtn.onclick = selectTextAnswer;
-        textBtn.style.marginTop = "10px";
-        textBtn.style.display = "block";
-        feedbackStep.appendChild(textBtn);
-        
+    if (!answer) {
+        alert("Please provide your answer before proceeding.");
+        return;
     }
+    
+    // Save the answer
+    let qKey = `q${currentStep + 1}`;
+    answers[qKey] = answer;
 
-    textInput.style.display = "block";
-    textInput.value = ""; // clear previous input
-
-    // Change button text to "Submit" if last question
-    if(currentStep === questions.length - 1){
-        textBtn.innerText = "Submit";
+    // Move to the next step or submit
+    currentStep++;
+    if (currentStep < questions.length) {
+        showQuestion(); 
     } else {
-        textBtn.innerText = "Next »";
+        submitFeedback(); // This correctly calls submit on the final question
     }
-    textBtn.style.display = "inline-block";
 }
 
 
-    // Update progress bar
-    let progress = ((currentStep) / questions.length) * 100;
-    let green = Math.floor(progress * 2.55);
-    let red = 255 - green;
-    document.getElementById('progressBar').style.width = progress + "%";
-    document.getElementById('progressBar').style.backgroundColor = `rgb(${red},${green},0)`;
-}
-
-// Handle MCQ answer
+// Handle MCQ answer (The version with the delay)
 function selectAnswer(optionIndex) {
-    let qKey = `q${currentStep+1}`;
-    answers[qKey] = questions[currentStep].options[optionIndex];
+    let qKey = `q${currentStep+1}`;
+    answers[qKey] = questions[currentStep].options[optionIndex];
 
-    currentStep++;
-    if(currentStep < questions.length){
-        showQuestion();
-    } else {
-        submitFeedback();
-    }
+    // Highlight selected button
+    let buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((btn, i) => {
+        if (i === optionIndex) {
+            btn.classList.add("selected");
+        } else {
+            btn.classList.remove("selected");
+        }
+    });
+
+    // Small delay so user sees the selection
+    setTimeout(() => {
+        currentStep++;
+        if (currentStep < questions.length) {
+            showQuestion(); // resets buttons for next question
+        } else {
+            submitFeedback();
+        }
+    }, 150); // 150ms delay
 }
 
-// Handle text answer
-function selectTextAnswer(){
-    let qKey = `q${currentStep+1}`;
-    let value = document.getElementById('textAnswer').value.trim();
-    if(!value){ 
-        alert("Please enter your answer"); 
-        return; 
-    }
-    answers[qKey] = value;
-
-    currentStep++;
-    if(currentStep < questions.length){
-        showQuestion();
-    } else {
-        submitFeedback();
-    }
-}
 
 // Submit final answers
 function submitFeedback() {
-    document.getElementById('progressBar').style.width = "100%";
-    document.getElementById('progressBar').style.backgroundColor = "green";
+    document.getElementById('progressBar').style.width = "100%";
+    document.getElementById('progressBar').style.backgroundColor = "green";
 
-    fetch("/submit_feedback", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(answers)
-    }).then(res => res.json())
-      .then(data => {
-          if(data.status === "success"){
-              window.location.href = "/thankyou";
-          } else {
-              alert("Error: " + data.message);
-          }
-      });
+    fetch("/submit_feedback", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(answers)
+    }).then(res => res.json())
+      .then(data => {
+          if(data.status === "success"){
+              window.location.href = data.redirect;
+          } else {
+              alert("Error: " + data.message);
+          }
+      });
 }
-
 </script>
 </body>
 </html>
