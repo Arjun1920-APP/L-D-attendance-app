@@ -5,54 +5,58 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import os
 from datetime import datetime
-
 import json
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"  # Needed for Flask sessions
 
-# ---------------- Google Sheets setup ----------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"  # Your sheet ID
-
-import urllib.parse
-
-# Try to load credentials from environment variables (for Render)
-credentials_env = os.getenv("GOOGLE_CREDENTIALS")
-token_env = os.getenv("GOOGLE_TOKEN")
 
 creds = None
 
 try:
-    if credentials_env:
-        # If stored as URL-encoded JSON in Render, decode it
-        credentials_json = urllib.parse.unquote(credentials_env)
-        creds_data = json.loads(credentials_json)
-        from google.oauth2.service_account import Credentials as ServiceAccountCredentials
-        creds = ServiceAccountCredentials.from_service_account_info(creds_data, scopes=SCOPES)
-        print("✅ Loaded credentials from environment variables (Render mode)")
+    # 1️⃣ Try to load OAuth token from Render environment
+    token_env = os.getenv("GOOGLE_TOKEN")
+    if token_env:
+        token_json = urllib.parse.unquote(token_env)  # decode if stored encoded
+        token_data = json.loads(token_json)
+
+        creds = Credentials(
+            token=token_data.get("token"),
+            refresh_token=token_data.get("refresh_token"),
+            token_uri=token_data.get("token_uri"),
+            client_id=token_data.get("client_id"),
+            client_secret=token_data.get("client_secret"),
+            scopes=token_data.get("scopes"),
+        )
+        print("✅ Loaded OAuth credentials from environment variable (Render mode)")
+
+    # 2️⃣ Fallback: use local token.json (for local dev)
     elif os.path.exists("token.json"):
-        # Fallback for local mode
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-        print("✅ Loaded credentials from local token.json (Local mode)")
+        print("✅ Loaded local token.json (Local mode)")
+
+    # 3️⃣ If no token found, prompt OAuth login locally
     else:
-        # Local flow for first-time auth
-        from google_auth_oauthlib.flow import InstalledAppFlow
         flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
         creds = flow.run_local_server(port=0)
         with open("token.json", "w") as token_file:
             token_file.write(creds.to_json())
-        print("✅ New token.json created (Local mode)")
+        print("✅ Created new token.json from OAuth login (Local mode)")
+
+    # Initialize Google Sheets client
+    if creds:
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+    else:
+        sheet = None
+        print("⚠️ Google Sheets client not initialized")
+
 except Exception as e:
     print("❌ Error loading Google credentials:", e)
-
-# Initialize Google Sheets client
-if creds:
-    client = gspread.authorize(creds)
-    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
-else:
     sheet = None
-    print("⚠️ Google Sheets client not initialized")
 
 
 # ---------------- Routes ----------------
