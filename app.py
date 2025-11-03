@@ -10,6 +10,12 @@ import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"  # Needed for Flask sessions
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "-1"
+    return response
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"  # Your sheet ID
@@ -97,9 +103,8 @@ def submit_feedback():
             data.get("q7"),
             data.get("q8"),
             data.get("q9"),
-            data.get("q10"),
-            data.get("q11"),
-            data.get("q12")
+            data.get("q10")
+        
         ]
         sheet.append_row(row)
         return jsonify({"status": "success" , "redirect": url_for("thankyou")})
