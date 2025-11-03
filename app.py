@@ -13,24 +13,47 @@ app.secret_key = "supersecretkey123"  # Needed for Flask sessions
 
 # ---------------- Google Sheets setup ----------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"  # Your sheet ID
 
-# Local JSON files
-CREDENTIALS_FILE = "credentials.json"
-TOKEN_FILE = "token.json"
-SPREADSHEET_ID = "1_vVNXOyuCYoAGt6bPHdbP1gJlXEInUcE-EnON0S9K_U"  # Replace with your actual sheet ID
+import urllib.parse
 
-# Authorize gspread client
+# Try to load credentials from environment variables (for Render)
+credentials_env = os.getenv("GOOGLE_CREDENTIALS")
+token_env = os.getenv("GOOGLE_TOKEN")
+
 creds = None
-if os.path.exists(TOKEN_FILE):
-    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-else:
-    flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-    creds = flow.run_local_server(port=0)
-    with open(TOKEN_FILE, "w") as token_file:
-        token_file.write(creds.to_json())
 
-client = gspread.authorize(creds)
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+try:
+    if credentials_env:
+        # If stored as URL-encoded JSON in Render, decode it
+        credentials_json = urllib.parse.unquote(credentials_env)
+        creds_data = json.loads(credentials_json)
+        from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+        creds = ServiceAccountCredentials.from_service_account_info(creds_data, scopes=SCOPES)
+        print("✅ Loaded credentials from environment variables (Render mode)")
+    elif os.path.exists("token.json"):
+        # Fallback for local mode
+        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+        print("✅ Loaded credentials from local token.json (Local mode)")
+    else:
+        # Local flow for first-time auth
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        creds = flow.run_local_server(port=0)
+        with open("token.json", "w") as token_file:
+            token_file.write(creds.to_json())
+        print("✅ New token.json created (Local mode)")
+except Exception as e:
+    print("❌ Error loading Google credentials:", e)
+
+# Initialize Google Sheets client
+if creds:
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+else:
+    sheet = None
+    print("⚠️ Google Sheets client not initialized")
+
 
 # ---------------- Routes ----------------
 @app.route("/")
