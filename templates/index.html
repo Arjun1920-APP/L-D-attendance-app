@@ -30,7 +30,9 @@
         <label class="form-label">Mobile*</label>
         <input type="text" id="phone" class="form-control" placeholder="Mobile no." required>
       </div>
-      <input type="hidden" id="session" value="{{ session }}">
+      <input type="hidden" id="session" value="{{session}}">
+      <input type="hidden" id="session_id" value="{{ session_id }}">
+      <input type="hidden" id="session_date" value="{{ session_date }}">
       <button class="submit-btn" onclick="startFeedback()"> Next &raquo; </button>
     </div>
 
@@ -78,16 +80,50 @@ function startFeedback() {
         alert("Fill all fields"); 
         return; 
     }
+let nextBtn = document.querySelector('.submit-btn');
+    nextBtn.disabled = true;
+    nextBtn.innerText = "Please Wait...";
+  answers.name = name;
+  answers.email = email;
+  answers.phone = phone;
+  answers.session_id = document.getElementById('session_id').value;
+  answers.session_date = document.getElementById('session_date').value;
+  answers.session_name = document.getElementById('session').value; // your existing session display
 
-    answers.name = name;
-    answers.email = email;
-    answers.phone = phone;
-    answers.session = sessionName;
+  // --- NEW: Perform server-side email validation ---
+    fetch("/validate_email", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            email: email, 
+            session_id: answers.session_id
+        })
+    }).then(res => res.json())
+      .then(data => {
+          // Re-enable the button regardless of outcome
+          nextBtn.disabled = false;
+          nextBtn.innerText = "Next »"; 
 
-    document.querySelector('.step-personal').style.display = "none";
-    let feedbackStep = document.querySelector('.step-feedback');
-    feedbackStep.style.display = "block";
-    document.querySelector('.progress').style.display = "block";
+          if(data.status === "success"){
+              // Email is valid (found on the list or validation passed)
+              document.querySelector('.step-personal').style.display = "none";
+              let feedbackStep = document.querySelector('.step-feedback');
+              feedbackStep.style.display = "block";
+              document.querySelector('.progress').style.display = "block";
+
+              currentStep = 0;
+              showQuestion();
+          } else {
+              // Email is NOT valid (not found on the list)
+              alert("Error: " + data.message);
+          }
+      }).catch(err => {
+          // Handle network errors
+          nextBtn.disabled = false;
+          nextBtn.innerText = "Next »";
+          alert("A network error occurred during email validation.");
+      });
+
 
     currentStep = 0;
     showQuestion();
@@ -254,21 +290,53 @@ function selectAnswer(optionIndex) {
 
 // Submit final answers
 function submitFeedback() {
-    document.getElementById('progressBar').style.width = "100%";
-    document.getElementById('progressBar').style.backgroundColor = "green";
-
-    fetch("/submit_feedback", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(answers)
-    }).then(res => res.json())
-      .then(data => {
-          if(data.status === "success"){
-              window.location.href = data.redirect;
-          } else {
-              alert("Error: " + data.message);
-          }
-      });
+    let questionText = document.getElementById('questionText');
+    let progressBar = document.getElementById('progressBar');
+    
+    // --- 1. UI LOCK & LOADING STATE ---
+    
+    // Max out progress bar
+    progressBar.style.width = "100%";
+    progressBar.style.backgroundColor = "green";
+    
+    // Hide buttons/text area and show submission message
+    questionText.innerText = "Submitting Feedback... Please wait. ";
+    document.querySelectorAll('.option-btn').forEach(btn => btn.style.display = "none");
+    
+    let textInput = document.getElementById('textAnswer');
+    if (textInput) textInput.style.display = "none";
+    let textBtn = document.getElementById('textNextBtn');
+    if (textBtn) textBtn.style.display = "none";
+    
+    // --- 2. Perform Submission ---
+    
+    fetch("/submit_feedback", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(answers)
+    }).then(res => res.json())
+      .then(data => {
+          // --- 3. Handle Response ---
+          if(data.status === "success"){
+              // Success: Redirect to the thank you page
+              window.location.href = data.redirect;
+          } else {
+              // Error: Show alert and revert UI state
+              alert("Error submitting feedback: " + data.message);
+              
+              // Re-display the last question/step for retry
+              currentStep = questions.length - 1; 
+              showQuestion(); 
+          }
+      })
+      .catch(err => {
+          // Network Error: Show alert and revert UI state
+          alert("Network error: Could not connect to the server.");
+          
+          // Re-display the last question/step for retry
+          currentStep = questions.length - 1; 
+          showQuestion();
+      });
 }
 </script>
 </body>

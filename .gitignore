@@ -1,8 +1,17 @@
-credentials.json
-token.json
+# Python environment and cache
+venv/
 __pycache__/
+*.pyc
+
+# Operating system files
+.DS_Store
+
+# Uploaded files and QR codes (dynamic content)
+uploads/
+static/qr/
 
 
-"credentials.json" 
-"token.json" 
-"__pycache__/" 
+# Credentials and sensitive configuration
+token.json
+credentials.json
+*.env

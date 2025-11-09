@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Session Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        /* This ensures the file input inherits some necessary styling */
+        .form-control-file {
+            height: auto !important;
+            padding: 10px 8px !important;
+            border: 1px solid #C0392B; /* Match form-control border */
+            border-radius: 8px; /* Match form-control border-radius */
+            width: 100%;
+            box-sizing: border-box; /* Important for width to include padding/border */
+        }
+        
+        /* Override float property to align with the full-width button desire */
+        .submit-btn.full-width {
+            float: none !important;
+            width: 100% !important;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="card">
+        
+        <div class="header">
+            <h1>📤 Upload Session Attendance File</h1>
+            <h2>Admin Tool</h2>
+        </div>
+
+        <form action="/admin/upload_session" method="POST" enctype="multipart/form-data">
+            
+            <div class="form-group">
+                <label class="form-label">Session Name:</label>
+                <input type="text" name="session_name" class="form-control" placeholder="e.g., Power BI Training" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Session Date:</label>
+                <input type="date" name="session_date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Excel File (.xlsx only):</label>
+                <input type="file" name="file" class="form-control-file" accept=".xlsx" required> 
+            </div>
+
+            <button type="submit" class="submit-btn full-width">Upload Session Data</button>
+            
+        </form>
+
+        {% if message %}
+                        <div class="msg" style="text-align: center; margin-top: 20px;">{{ message | safe }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>
